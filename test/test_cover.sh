@@ -1,0 +1,15 @@
+#! /bin/bash
+
+PKGS=$(go list github.com/PikeEcosystem/tendermint/...)
+
+set -e
+
+echo "mode: atomic" > coverage.txt
+for pkg in ${PKGS[@]}; do
+	# timeout: the `consensus`, `mempool` and `types` package will take too much time
+	go test -timeout 8m -race -coverprofile=profile.out -covermode=atomic "$pkg"
+	if [ -f profile.out ]; then
+		tail -n +2 profile.out >> coverage.txt;
+		rm profile.out
+	fi
+done
